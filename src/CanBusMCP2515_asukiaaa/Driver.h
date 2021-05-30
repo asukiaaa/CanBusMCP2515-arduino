@@ -5,9 +5,9 @@
 
 #include <CanBusData_asukiaaa.hpp>
 
-#include "Settings.h"
 #include "ACANBuffer16.h"
 #include "MCP2515ReceiveFilters.h"
+#include "Settings.h"
 
 // #define SERIAL_DEBUG Serial
 
@@ -68,8 +68,7 @@ class Driver {
   static const uint16_t kCannotAllocateTransmitBuffer1 = 1 << 11;
   static const uint16_t kCannotAllocateTransmitBuffer2 = 1 << 12;
   static const uint32_t kISRNotNullAndNoIntPin = 1 << 13;
-  uint16_t changeModeOnTheFly(
-      const Settings::RequestedMode inRequestedMode);
+  uint16_t changeModeOnTheFly(const Settings::RequestedMode inRequestedMode);
   uint16_t setFiltersOnTheFly(void);
   uint16_t setFiltersOnTheFly(
       const ACAN2515Mask inRXM0,
@@ -81,7 +80,7 @@ class Driver {
       const uint8_t inAcceptanceFilterCount);
   void end(void);
   bool available(void);
-  bool receive(CanBusData_asukiaaa::Frame* outFrame);
+  bool receive(CanBusData_asukiaaa::Frame *outFrame);
   typedef void (*tFilterMatchCallBack)(const uint8_t inFilterIndex);
   bool dispatchReceivedMessage(
       const tFilterMatchCallBack inFilterMatchCallBack = NULL);
@@ -129,7 +128,7 @@ class Driver {
   ACANBuffer16 mReceiveBuffer;
   void handleTXBInterrupt(const uint8_t inTXB);
   void handleRXBInterrupt(void);
-  SPIClass* mSpi = NULL;
+  SPIClass *mSpi = NULL;
   const SPISettings mSPISettings;
   const uint8_t mCS;
   const uint8_t mINT;
@@ -139,9 +138,8 @@ class Driver {
   inline void select(void) { digitalWrite(mCS, LOW); }
   inline void unselect(void) { digitalWrite(mCS, HIGH); }
   uint16_t beginWithoutFilterCheck(
-      const Settings &inSettings,
-      void (*inInterruptServiceRoutine)(void), const ACAN2515Mask inRXM0,
-      const ACAN2515Mask inRXM1,
+      const Settings &inSettings, void (*inInterruptServiceRoutine)(void),
+      const ACAN2515Mask inRXM0, const ACAN2515Mask inRXM1,
       const ACAN2515AcceptanceFilter inAcceptanceFilters[],
       const uint8_t inAcceptanceFilterCount);
   uint16_t internalBeginOperation(

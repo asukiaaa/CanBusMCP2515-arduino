@@ -10,8 +10,7 @@ CanBusMCP2515_asukiaaa::Driver can(PIN_CS, PIN_INT);
 
 void setup() {
   CanBusMCP2515_asukiaaa::Settings settings(QUARTZ_FREQUENCY, BAUDRATE);
-  settings.mRequestedMode =
-      CanBusMCP2515_asukiaaa::Settings::LoopBackMode;  // Select loopback mode
+  settings.mRequestedMode = CanBusMCP2515_asukiaaa::Settings::LoopBackMode;
   const uint16_t errorCode = can.begin(settings, [] { can.isr(); });
   if (errorCode == 0) {
     Serial.print("Bit Rate prescaler: ");

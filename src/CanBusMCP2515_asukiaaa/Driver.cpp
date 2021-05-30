@@ -622,7 +622,7 @@ void Driver::handleRXBInterrupt(void) {
     //---
     select();
     mSpi->transfer(accessRXB0 ? READ_FROM_RXB0SIDH_COMMAND
-                             : READ_FROM_RXB1SIDH_COMMAND);
+                              : READ_FROM_RXB1SIDH_COMMAND);
     //--- SIDH
     message.id = mSpi->transfer(0);
     //--- SIDL
@@ -690,7 +690,7 @@ void Driver::internalSendMessage(const CanBusData_asukiaaa::Frame& inFrame,
   mSpi->transfer(loadTxBufferCommand);
   if (inFrame.ext) {  // Extended frame
     uint32_t v = inFrame.id >> 21;
-    mSpi->transfer((uint8_t)v);       // ID28 ... ID21 --> SIDH
+    mSpi->transfer((uint8_t)v);      // ID28 ... ID21 --> SIDH
     v = (inFrame.id >> 13) & 0xE0;   // ID20, ID19, ID18 in bits 7, 6, 5
     v |= (inFrame.id >> 16) & 0x03;  // ID17, ID16 in bits 1, 0
     v |= 0x08;                       // Extended bit
@@ -704,11 +704,11 @@ void Driver::internalSendMessage(const CanBusData_asukiaaa::Frame& inFrame,
         (uint8_t)v);  // ID7, ID6, ID5, ID4, ID3, ID2, ID1, ID0 --> EID0
   } else {            // Standard frame
     uint32_t v = inFrame.id >> 3;
-    mSpi->transfer((uint8_t)v);     // ID10 ... ID3 --> SIDH
+    mSpi->transfer((uint8_t)v);    // ID10 ... ID3 --> SIDH
     v = (inFrame.id << 5) & 0xE0;  // ID2, ID1, ID0 in bits 7, 6, 5
-    mSpi->transfer((uint8_t)v);     // ID2, ID1, ID0, -, 0, -, 0, 0 --> SIDL
-    mSpi->transfer(0x00);           // any value --> EID8
-    mSpi->transfer(0x00);           // any value --> EID0
+    mSpi->transfer((uint8_t)v);    // ID2, ID1, ID0, -, 0, -, 0, 0 --> SIDL
+    mSpi->transfer(0x00);          // any value --> EID8
+    mSpi->transfer(0x00);          // any value --> EID0
   }
   //--- DLC
   uint8_t v = inFrame.len;

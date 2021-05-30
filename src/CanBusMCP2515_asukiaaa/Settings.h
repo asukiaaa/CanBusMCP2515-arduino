@@ -21,14 +21,14 @@ class Settings {
 
   typedef enum : uint8_t { CLOCK, CLOCK2, CLOCK4, CLOCK8, SOF, HiZ } CLKOUT_SOF;
   explicit Settings(const uint32_t inQuartzFrequency,  // In Hertz
-                            const uint32_t inDesiredBitRate,
-                            const uint32_t inTolerancePPM = 1000);
+                    const uint32_t inDesiredBitRate,
+                    const uint32_t inTolerancePPM = 1000);
   explicit Settings(const uint32_t inQuartzFrequency,    // In Hertz
-                            const uint8_t inBitRatePrescaler,    // 1...64
-                            const uint8_t inPropagationSegment,  // 1...8
-                            const uint8_t inPhaseSegment1,       // 1...8
-                            const uint8_t inPhaseSegment2,       // 2...8
-                            const uint8_t inSJW);                // 1...4
+                    const uint8_t inBitRatePrescaler,    // 1...64
+                    const uint8_t inPropagationSegment,  // 1...8
+                    const uint8_t inPhaseSegment1,       // 1...8
+                    const uint8_t inPhaseSegment2,       // 2...8
+                    const uint8_t inSJW);                // 1...4
   const uint32_t mQuartzFrequency;
 
   uint32_t mDesiredBitRate = mQuartzFrequency / 64;  // In kb/s

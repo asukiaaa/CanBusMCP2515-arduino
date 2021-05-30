@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 
-#include <CanBusData_asukiaaa.hpp>
+#include <CanBusData_asukiaaa.h>
 
 #include "ACANBuffer16.h"
 #include "MCP2515ReceiveFilters.h"

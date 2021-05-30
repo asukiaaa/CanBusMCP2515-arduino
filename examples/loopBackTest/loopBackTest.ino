@@ -49,31 +49,17 @@ void loop() {
     frame.id = SENDER_ID;
     frame.data64 = millis();
     const bool ok = can.tryToSend(frame);
-    Serial.print("Sent");
-    for (int i = 0; i < frame.len; ++i) {
-      Serial.print(" ");
-      Serial.print(frame.data[i]);
-    }
-    Serial.println("");
-    Serial.println("as id " + String(frame.id));
-    if (ok) {
-      Serial.print("at ");
-      Serial.println(millis());
-    } else {
-      Serial.print("Send failure at ");
-      Serial.println(millis());
-    }
+    Serial.println("Send");
+    Serial.println(frame.toString());
+    Serial.print(ok ? "succeeded" : "failed");
+    Serial.print(" at ");
+    Serial.println(millis());
   }
   if (can.available()) {
-    CanBusData_asukiaaa::Frame receivedFrame;
-    can.receive(&receivedFrame);
-    Serial.print("Received");
-    for (int i = 0; i < receivedFrame.len; ++i) {
-      Serial.print(" ");
-      Serial.print(receivedFrame.data[i]);
-    }
-    Serial.println("");
-    Serial.println("from id " + String(receivedFrame.id));
+    CanBusData_asukiaaa::Frame frame;
+    can.receive(&frame);
+    Serial.println("Received");
+    Serial.println(frame.toString());
     Serial.print("at ");
     Serial.println(millis());
   }

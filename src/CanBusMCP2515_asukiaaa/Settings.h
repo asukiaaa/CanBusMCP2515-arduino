@@ -10,15 +10,15 @@
 
 namespace CanBusMCP2515_asukiaaa {
 
+enum class OperationMode: uint8_t {
+  Normal = 0 << 5,
+  Sleep = 1 << 5,
+  LoopBack = 2 << 5,
+  ListenOnly = 3 << 5,
+};
+
 class Settings {
  public:
-  typedef enum : uint8_t {
-    NormalMode = 0 << 5,
-    SleepMode = 1 << 5,
-    LoopBackMode = 2 << 5,
-    ListenOnlyMode = 3 << 5
-  } RequestedMode;
-
   typedef enum : uint8_t { CLOCK, CLOCK2, CLOCK4, CLOCK8, SOF, HiZ } CLKOUT_SOF;
   explicit Settings(const uint32_t inQuartzFrequency,  // In Hertz
                     const uint32_t inDesiredBitRate,
@@ -61,7 +61,7 @@ class Settings {
 
   uint8_t mTXBPriority = 0;
 
-  RequestedMode mRequestedMode = NormalMode;
+  OperationMode mOperationMode = OperationMode::Normal;
   CLKOUT_SOF mCLKOUT_SOF_pin = CLOCK;
 
   //······················································································································

@@ -68,7 +68,7 @@ class Driver {
   static const uint16_t kCannotAllocateTransmitBuffer1 = 1 << 11;
   static const uint16_t kCannotAllocateTransmitBuffer2 = 1 << 12;
   static const uint32_t kISRNotNullAndNoIntPin = 1 << 13;
-  uint16_t changeModeOnTheFly(const Settings::RequestedMode inRequestedMode);
+  uint16_t changeModeOnTheFly(const OperationMode operationMode);
   uint16_t setFiltersOnTheFly(void);
   uint16_t setFiltersOnTheFly(
       const ACAN2515Mask inRXM0,

@@ -403,7 +403,7 @@ uint16_t Driver::internalBeginOperation(
         break;
     }
     //--- Request mode
-    const uint8_t requestedMode = (uint8_t)inSettings.mRequestedMode;
+    const uint8_t requestedMode = (uint8_t)inSettings.mOperationMode;
     errorCode |= setRequestedMode(canctrl | requestedMode);
   }
   //-----------------------------------
@@ -433,14 +433,13 @@ uint16_t Driver::setRequestedMode(const uint8_t inCANControlRegister) {
   return errorCode;
 }
 
-uint16_t Driver::changeModeOnTheFly(
-    const Settings::RequestedMode inRequestedMode) {
+uint16_t Driver::changeModeOnTheFly(const OperationMode operationMode) {
   //--- Read current mode register (for saving settings of bits 0 ... 4)
   mSpi->beginTransaction(mSPISettings);
   const uint8_t currentMode = read2515Register(CANCTRL_REGISTER);
   mSpi->endTransaction();
   //--- New mode
-  const uint8_t newMode = (currentMode & 0x1F) | (uint8_t)inRequestedMode;
+  const uint8_t newMode = (currentMode & 0x1F) | (uint8_t)operationMode;
   //--- Set new mode
   const uint16_t errorCode = setRequestedMode(newMode);
   //---

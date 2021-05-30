@@ -224,13 +224,13 @@ bool Driver::available(void) {
   return hasReceivedMessage;
 }
 
-bool Driver::receive(CanBusData_asukiaaa::Frame& outMessage) {
+bool Driver::receive(CanBusData_asukiaaa::Frame* outMessage) {
 #ifdef ARDUINO_ARCH_ESP32
   mSpi->beginTransaction(mSPISettings);  // For ensuring mutual exclusion access
 #else
   noInterrupts();
 #endif
-  const bool hasReceivedMessage = mReceiveBuffer.remove(outMessage);
+  const bool hasReceivedMessage = mReceiveBuffer.remove(*outMessage);
 #ifdef ARDUINO_ARCH_ESP32
   mSpi->endTransaction();
 #else
@@ -243,7 +243,7 @@ bool Driver::receive(CanBusData_asukiaaa::Frame& outMessage) {
 bool Driver::dispatchReceivedMessage(
     const tFilterMatchCallBack inFilterMatchCallBack) {
   CanBusData_asukiaaa::Frame receivedMessage;
-  const bool hasReceived = receive(receivedMessage);
+  const bool hasReceived = receive(&receivedMessage);
   if (hasReceived) {
     const uint8_t filterIndex = receivedMessage.idx;
     if (NULL != inFilterMatchCallBack) {

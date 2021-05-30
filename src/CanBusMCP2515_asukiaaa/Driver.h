@@ -61,7 +61,7 @@ class Driver {
       const uint8_t inAcceptanceFilterCount);
   void end(void);
   bool available(void);
-  bool receive(CanBusData_asukiaaa::Frame &outFrame);
+  bool receive(CanBusData_asukiaaa::Frame* outFrame);
   typedef void (*tFilterMatchCallBack)(const uint8_t inFilterIndex);
   bool dispatchReceivedMessage(
       const tFilterMatchCallBack inFilterMatchCallBack = NULL);

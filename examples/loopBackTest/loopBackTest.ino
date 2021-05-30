@@ -56,7 +56,8 @@ void loop() {
     }
   }
   if (can.available()) {
-    can.receive(frame);
+    CanBusData_asukiaaa::Frame receivedFrame;
+    can.receive(&receivedFrame);
     Serial.print("ReceivedAt: ");
     Serial.println(millis());
   }

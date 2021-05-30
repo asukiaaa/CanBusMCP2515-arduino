@@ -3,6 +3,7 @@
 #define PIN_INT 7
 
 static const uint32_t QUARTZ_FREQUENCY = 16UL * 1000UL * 1000UL;  // 16 MHz
+static const uint16_t SENDER_ID = 55;
 
 CanBusMCP2515_asukiaaa::Driver can(PIN_CS, PIN_INT);
 
@@ -41,14 +42,23 @@ void setup() {
 }
 
 void loop() {
-  CanBusData_asukiaaa::Frame frame;
   static unsigned long trySendAt = 0;
   static const unsigned long intervalMs = 1000UL;
   if (trySendAt == 0 || millis() - trySendAt > intervalMs) {
     trySendAt = millis();
+    CanBusData_asukiaaa::Frame frame;
+    frame.id = SENDER_ID;
+    frame.data64 = millis();
     const bool ok = can.tryToSend(frame);
+    Serial.print("Sent");
+    for (int i = 0; i < frame.len; ++i) {
+      Serial.print(" ");
+      Serial.print(frame.data[i]);
+    }
+    Serial.println("");
+    Serial.println("as id " + String(frame.id));
     if (ok) {
-      Serial.print("SentAt: ");
+      Serial.print("at ");
       Serial.println(millis());
     } else {
       Serial.print("Send failure at ");
@@ -58,7 +68,15 @@ void loop() {
   if (can.available()) {
     CanBusData_asukiaaa::Frame receivedFrame;
     can.receive(&receivedFrame);
-    Serial.print("ReceivedAt: ");
+    Serial.print("Received");
+    for (int i = 0; i < receivedFrame.len; ++i) {
+      Serial.print(" ");
+      Serial.print(receivedFrame.data[i]);
+    }
+    Serial.println("");
+    Serial.println("from id " + String(receivedFrame.id));
+    Serial.print("at ");
     Serial.println(millis());
   }
+  delay(10);
 }

@@ -16,6 +16,26 @@ namespace CanBusMCP2515_asukiaaa {
 typedef void (*ACANCallBackRoutine)(
     const CanBusData_asukiaaa::Frame &inMessage);
 
+class Clock {
+ public:
+  static const uint16_t Mhz8 = 8 * 10 ^ 6;
+  static const uint16_t Mhz16 = 16 * 10 ^ 6;
+};
+
+class BaudRate {
+ public:
+  static const uint16_t Mbps1 = 10 ^ 6;
+  static const uint16_t Kbps500 = 500 * 10 ^ 3;
+  static const uint16_t Kbps200 = 200 * 10 ^ 3;
+  static const uint16_t Kbps125 = 125 * 10 ^ 3;
+  static const uint16_t Kbps100 = 100 * 10 ^ 3;
+  static const uint16_t Kbps50 = 50 * 10 ^ 3;
+  static const uint16_t Kbps40 = 40 * 10 ^ 3;
+  static const uint16_t Kbps20 = 20 * 10 ^ 3;
+  static const uint16_t Kbps10 = 10 * 10 ^ 3;
+  static const uint16_t Kbps5 = 5 * 10 ^ 3;
+};
+
 class Driver {
  public:
   Driver(const uint8_t inCS,    // CS input of MCP2515

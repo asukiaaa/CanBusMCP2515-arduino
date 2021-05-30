@@ -224,7 +224,7 @@ bool Driver::available(void) {
   return hasReceivedMessage;
 }
 
-bool Driver::receive(CanBusData_asukiaaa::Frame* outMessage) {
+bool Driver::receive(Frame* outMessage) {
 #ifdef ARDUINO_ARCH_ESP32
   mSpi->beginTransaction(mSPISettings);  // For ensuring mutual exclusion access
 #else
@@ -240,9 +240,16 @@ bool Driver::receive(CanBusData_asukiaaa::Frame* outMessage) {
   return hasReceivedMessage;
 }
 
+bool Driver::receive(CanBusData_asukiaaa::Frame* outMessage) {
+  Frame frame;
+  bool result = receive(&frame);
+  *outMessage = frame;
+  return result;
+}
+
 bool Driver::dispatchReceivedMessage(
     const tFilterMatchCallBack inFilterMatchCallBack) {
-  CanBusData_asukiaaa::Frame receivedMessage;
+  Frame receivedMessage;
   const bool hasReceived = receive(&receivedMessage);
   if (hasReceived) {
     const uint8_t filterIndex = receivedMessage.idx;
@@ -608,7 +615,7 @@ void Driver::handleRXBInterrupt(void) {
   const bool received = (rxStatus & 0xC0) != 0;
   if (received) {  // Message in RXB0 and / or RXB1
     const bool accessRXB0 = (rxStatus & 0x40) != 0;
-    CanBusData_asukiaaa::Frame message;
+    Frame message;
     message.rtr = (rxStatus & 0x08) !=
                   0;  // Thanks to Arjan-Woltjer for having fixed this bug
     message.ext = (rxStatus & 0x10) !=
@@ -808,7 +815,7 @@ uint8_t Driver::errorFlagRegister(void) {
   return result;
 }
 
-bool Driver::tryToSend(const CanBusData_asukiaaa::Frame& inMessage) {
+bool Driver::tryToSend(const Frame& inMessage) {
   //--- Fix send buffer index
   uint8_t idx = inMessage.idx;
   if (idx > 2) {
@@ -833,6 +840,10 @@ bool Driver::tryToSend(const CanBusData_asukiaaa::Frame& inMessage) {
   interrupts();
 #endif
   return ok;
+}
+
+bool Driver::tryToSend(const CanBusData_asukiaaa::Frame& inMessage) {
+  return tryToSend(Frame(inMessage));
 }
 
 };  // namespace CanBusMCP2515_asukiaaa

@@ -31,7 +31,7 @@ void loop() {
     CanBusData_asukiaaa::Frame frame;
     frame.id = SENDER_ID;
     frame.data64 = millis();
-    frame.idx = frame.data64 % 3;
+    // frame.idx = frame.data64 % 3;
     const bool ok = can.tryToSend(frame);
     Serial.println("Send");
     Serial.println(frame.toString());

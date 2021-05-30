@@ -5,6 +5,7 @@
 #include <SPI.h>
 
 #include "ACANBuffer16.h"
+#include "Frame.h"
 #include "MCP2515ReceiveFilters.h"
 #include "Settings.h"
 
@@ -78,6 +79,7 @@ class Driver {
       const uint8_t inAcceptanceFilterCount);
   void end(void);
   bool available(void);
+  bool receive(Frame *outFrame);
   bool receive(CanBusData_asukiaaa::Frame *outFrame);
   typedef void (*tFilterMatchCallBack)(const uint8_t inFilterIndex);
   bool dispatchReceivedMessage(
@@ -101,6 +103,7 @@ class Driver {
     return mReceiveBuffer.peakCount();
   }
 
+  bool tryToSend(const Frame &inMessage);
   bool tryToSend(const CanBusData_asukiaaa::Frame &inMessage);
 
   inline uint16_t transmitBufferSize(const uint8_t inIndex) const {

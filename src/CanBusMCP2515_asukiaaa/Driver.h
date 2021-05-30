@@ -1,9 +1,8 @@
 #pragma once
 
 #include <Arduino.h>
-#include <SPI.h>
-
 #include <CanBusData_asukiaaa.h>
+#include <SPI.h>
 
 #include "ACANBuffer16.h"
 #include "MCP2515ReceiveFilters.h"
@@ -38,16 +37,15 @@ class BitRate {
 
 class Driver {
  public:
-  Driver(const uint8_t inCS,    // CS input of MCP2515
-         const uint8_t inINT);  // INT output of MCP2515
-  uint16_t begin(const Settings &inSettings,
+  Driver(const uint8_t inCS);
+  uint16_t begin(const Settings &inSettings, const int inINT,
                  void (*inInterruptServiceRoutine)(void));
-  uint16_t begin(const Settings &inSettings,
+  uint16_t begin(const Settings &inSettings, const int inINT,
                  void (*inInterruptServiceRoutine)(void),
                  const ACAN2515Mask inRXM0,
                  const ACAN2515AcceptanceFilter inAcceptanceFilters[],
                  const uint8_t inAcceptanceFilterCount);
-  uint16_t begin(const Settings &inSettings,
+  uint16_t begin(const Settings &inSettings, const int inINT,
                  void (*inInterruptServiceRoutine)(void),
                  const ACAN2515Mask inRXM0, const ACAN2515Mask inRXM1,
                  const ACAN2515AcceptanceFilter inAcceptanceFilters[],
@@ -131,15 +129,16 @@ class Driver {
   SPIClass *mSpi = NULL;
   const SPISettings mSPISettings;
   const uint8_t mCS;
-  const uint8_t mINT;
+  int mINT;
 
   void internalSendMessage(const CanBusData_asukiaaa::Frame &inFrame,
                            const uint8_t inTXB);
   inline void select(void) { digitalWrite(mCS, LOW); }
   inline void unselect(void) { digitalWrite(mCS, HIGH); }
   uint16_t beginWithoutFilterCheck(
-      const Settings &inSettings, void (*inInterruptServiceRoutine)(void),
-      const ACAN2515Mask inRXM0, const ACAN2515Mask inRXM1,
+      const Settings &inSettings, const int inINT,
+      void (*inInterruptServiceRoutine)(void), const ACAN2515Mask inRXM0,
+      const ACAN2515Mask inRXM1,
       const ACAN2515AcceptanceFilter inAcceptanceFilters[],
       const uint8_t inAcceptanceFilterCount);
   uint16_t internalBeginOperation(

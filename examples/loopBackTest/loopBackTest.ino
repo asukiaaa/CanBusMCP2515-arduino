@@ -7,14 +7,14 @@ static const auto QUARTZ_FREQUENCY =
 static const auto BITRATE = CanBusMCP2515_asukiaaa::BitRate::Kbps125;
 static const uint16_t SENDER_ID = 55;
 
-CanBusMCP2515_asukiaaa::Driver can(PIN_CS, PIN_INT);
+CanBusMCP2515_asukiaaa::Driver can(PIN_CS);
 
 void setup() {
   CanBusMCP2515_asukiaaa::Settings settings(QUARTZ_FREQUENCY, BITRATE);
   settings.mOperationMode = CanBusMCP2515_asukiaaa::OperationMode::LoopBack;
   Serial.println("settings:");
   Serial.println(settings.toString());
-  const uint16_t errorCode = can.begin(settings, [] { can.isr(); });
+  const uint16_t errorCode = can.begin(settings, PIN_INT, [] { can.isr(); });
   if (errorCode == 0) {
     Serial.print("Succeeced in beginning");
   } else {

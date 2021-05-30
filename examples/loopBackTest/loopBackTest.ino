@@ -12,28 +12,11 @@ CanBusMCP2515_asukiaaa::Driver can(PIN_CS, PIN_INT);
 void setup() {
   CanBusMCP2515_asukiaaa::Settings settings(QUARTZ_FREQUENCY, BITRATE);
   settings.mOperationMode = CanBusMCP2515_asukiaaa::OperationMode::LoopBack;
+  Serial.println("settings:");
+  Serial.println(settings.toString());
   const uint16_t errorCode = can.begin(settings, [] { can.isr(); });
   if (errorCode == 0) {
-    Serial.print("Bit Rate prescaler: ");
-    Serial.println(settings.mBitRatePrescaler);
-    Serial.print("Propagation Segment: ");
-    Serial.println(settings.mPropagationSegment);
-    Serial.print("Phase segment 1: ");
-    Serial.println(settings.mPhaseSegment1);
-    Serial.print("Phase segment 2: ");
-    Serial.println(settings.mPhaseSegment2);
-    Serial.print("SJW: ");
-    Serial.println(settings.mSJW);
-    Serial.print("Triple Sampling: ");
-    Serial.println(settings.mTripleSampling ? "yes" : "no");
-    Serial.print("Actual bit rate: ");
-    Serial.print(settings.actualBitRate());
-    Serial.println(" bit/s");
-    Serial.print("Exact bit rate ? ");
-    Serial.println(settings.exactBitRate() ? "yes" : "no");
-    Serial.print("Sample point: ");
-    Serial.print(settings.samplePointFromBitStart());
-    Serial.println("%");
+    Serial.print("Succeeced in beginning");
   } else {
     Serial.print("Configuration error 0x");
     Serial.println(errorCode, HEX);
@@ -48,6 +31,7 @@ void loop() {
     CanBusData_asukiaaa::Frame frame;
     frame.id = SENDER_ID;
     frame.data64 = millis();
+    frame.idx = frame.data64 % 3;
     const bool ok = can.tryToSend(frame);
     Serial.println("Send");
     Serial.println(frame.toString());

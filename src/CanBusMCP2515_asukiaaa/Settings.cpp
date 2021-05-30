@@ -78,6 +78,19 @@ Settings::Settings(const uint32_t inQuartzFrequency,
   }
 };
 
+String Settings::toString() {
+  return "mBitRatePrescaler: " + String(mBitRatePrescaler) +
+         ", mPropagationSegment: " + String(mPropagationSegment) +
+         ", mPhaseSegment1: " + String(mPhaseSegment1) +
+         ", mPhaseSegment2: " + String(mPhaseSegment2) +
+         ", mSJW: " + String(mSJW) +
+         ", mTripleSampling: " + String(mTripleSampling ? "yes" : "no") +
+         ", actualBitRate(): " + String(actualBitRate()) + " bit/s" +
+         ", exactBitRate(): " + String(exactBitRate() ? "yes" : "no") +
+         ", samplePointFromBitStart(): " + String(samplePointFromBitStart()) +
+         "%";
+}
+
 //----------------------------------------------------------------------------------------------------------------------
 
 static uint32_t bitrateFrom(const uint32_t inQuartzFrequency,    // In Hertz

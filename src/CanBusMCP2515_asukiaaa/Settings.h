@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <Arduino.h>
 
 namespace CanBusMCP2515_asukiaaa {
 
-enum class OperationMode: uint8_t {
+enum class OperationMode : uint8_t {
   Normal = 0 << 5,
   Sleep = 1 << 5,
   LoopBack = 2 << 5,
@@ -29,6 +29,7 @@ class Settings {
                     const uint8_t inPhaseSegment1,       // 1...8
                     const uint8_t inPhaseSegment2,       // 2...8
                     const uint8_t inSJW);                // 1...4
+  String toString();
   const uint32_t mQuartzFrequency;
 
   uint32_t mDesiredBitRate = mQuartzFrequency / 64;  // In kb/s

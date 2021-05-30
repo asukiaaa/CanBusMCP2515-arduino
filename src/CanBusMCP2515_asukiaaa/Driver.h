@@ -16,24 +16,24 @@ namespace CanBusMCP2515_asukiaaa {
 typedef void (*ACANCallBackRoutine)(
     const CanBusData_asukiaaa::Frame &inMessage);
 
-class Clock {
+class QuartzFrequency {
  public:
-  static const uint16_t Mhz8 = 8 * 10 ^ 6;
-  static const uint16_t Mhz16 = 16 * 10 ^ 6;
+  static const uint32_t MHz8 = 8UL * 1000UL * 1000UL;
+  static const uint32_t MHz16 = 16UL * 1000UL * 1000UL;
 };
 
-class BaudRate {
+class BitRate {
  public:
-  static const uint16_t Mbps1 = 10 ^ 6;
-  static const uint16_t Kbps500 = 500 * 10 ^ 3;
-  static const uint16_t Kbps200 = 200 * 10 ^ 3;
-  static const uint16_t Kbps125 = 125 * 10 ^ 3;
-  static const uint16_t Kbps100 = 100 * 10 ^ 3;
-  static const uint16_t Kbps50 = 50 * 10 ^ 3;
-  static const uint16_t Kbps40 = 40 * 10 ^ 3;
-  static const uint16_t Kbps20 = 20 * 10 ^ 3;
-  static const uint16_t Kbps10 = 10 * 10 ^ 3;
-  static const uint16_t Kbps5 = 5 * 10 ^ 3;
+  static const uint32_t Mbps1 = 10UL ^ 6;
+  static const uint32_t Kbps500 = 500UL * 1000UL;
+  static const uint32_t Kbps200 = 200UL * 1000UL;
+  static const uint32_t Kbps125 = 125UL * 1000UL;
+  static const uint32_t Kbps100 = 100UL * 1000UL;
+  static const uint32_t Kbps50 = 50UL * 1000UL;
+  static const uint32_t Kbps40 = 40UL * 1000UL;
+  static const uint32_t Kbps20 = 20UL * 1000UL;
+  static const uint32_t Kbps10 = 10UL * 1000UL;
+  static const uint32_t Kbps5 = 5UL * 1000UL;
 };
 
 class Driver {

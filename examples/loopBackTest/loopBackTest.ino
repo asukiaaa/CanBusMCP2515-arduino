@@ -2,14 +2,15 @@
 #define PIN_CS 10
 #define PIN_INT 7
 
-static const uint32_t QUARTZ_FREQUENCY = CanBusMCP2515_asukiaaa::Clock::Mhz16;
-static const uint32_t BAUDRATE = CanBusMCP2515_asukiaaa::BaudRate::Kbps500;
+static const auto QUARTZ_FREQUENCY =
+    CanBusMCP2515_asukiaaa::QuartzFrequency::MHz16;
+static const auto BITRATE = CanBusMCP2515_asukiaaa::BitRate::Kbps125;
 static const uint16_t SENDER_ID = 55;
 
 CanBusMCP2515_asukiaaa::Driver can(PIN_CS, PIN_INT);
 
 void setup() {
-  CanBusMCP2515_asukiaaa::Settings settings(QUARTZ_FREQUENCY, BAUDRATE);
+  CanBusMCP2515_asukiaaa::Settings settings(QUARTZ_FREQUENCY, BITRATE);
   settings.mOperationMode = CanBusMCP2515_asukiaaa::OperationMode::LoopBack;
   const uint16_t errorCode = can.begin(settings, [] { can.isr(); });
   if (errorCode == 0) {

@@ -14,13 +14,16 @@ void setup() {
   settings.mOperationMode = CanBusMCP2515_asukiaaa::OperationMode::LoopBack;
   Serial.println("settings:");
   Serial.println(settings.toString());
-  const uint16_t errorCode = can.begin(settings, PIN_INT, [] { can.isr(); });
-  if (errorCode == 0) {
-    Serial.print("Succeeced in beginning");
-  } else {
+  // while(!Serial) { delay(10); }
+  while (true) {
+    uint16_t errorCode = can.begin(settings, PIN_INT, [] { can.isr(); });
+    if (errorCode == 0) break;
+    // Serial.println(String(PIN_INT) + " " + String(digitalPinToInterrupt(PIN_INT)));
     Serial.print("Configuration error 0x");
     Serial.println(errorCode, HEX);
+    delay(1000);
   }
+  Serial.print("Succeeced in beginning");
 }
 
 void loop() {
@@ -33,9 +36,9 @@ void loop() {
     frame.data64 = millis();
     // frame.idx = frame.data64 % 3;
     const bool ok = can.tryToSend(frame);
-    Serial.println("Send");
+    Serial.println("Sent");
     Serial.println(frame.toString());
-    Serial.print(ok ? "succeeded" : "failed");
+    Serial.print(ok ? "Succeeded" : "Failed");
     Serial.print(" at ");
     Serial.println(millis());
   }

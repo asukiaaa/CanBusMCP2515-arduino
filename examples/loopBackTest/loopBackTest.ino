@@ -1,6 +1,10 @@
 #include <CanBusMCP2515_asukiaaa.h>
+#ifndef PIN_CS
 #define PIN_CS 10
+#endif
+#ifndef PIN_INT
 #define PIN_INT 7
+#endif
 
 static const auto QUARTZ_FREQUENCY =
     CanBusMCP2515_asukiaaa::QuartzFrequency::MHz16;

@@ -82,52 +82,53 @@ static void myESP32Task(void* pData) {
 #endif
 
 String Error::toString(uint16_t errorCode) {
-  String str = "";
-  String strJoin = ", ";
-  if ((errorCode & Error::NoMCP2515) != 0) {
-    str += "NoMCP2515" + strJoin;
-  }
-  if ((errorCode & Error::TooFarFromDesiredBitRate) != 0) {
-    str += "TooFarFromDesiredBitRate" + strJoin;
-  }
-  if ((errorCode & Error::InconsistentBitRateSettings) != 0) {
-    str += "InconsistentBitRateSettings" + strJoin;
-  }
-  if ((errorCode & Error::INTPinIsNotAnInterrupt) != 0) {
-    str += "INTPinIsNotAnInterrupt" + strJoin;
-  }
-  if ((errorCode & Error::ISRIsNull) != 0) {
-    str += "ISRIsNull" + strJoin;
-  }
-  if ((errorCode & Error::RequestedModeTimeOut) != 0) {
-    str += "RequestedModeTimeOut" + strJoin;
-  }
-  if ((errorCode & Error::AcceptanceFilterArrayIsNULL) != 0) {
-    str += "AcceptanceFilterArrayIsNULL" + strJoin;
-  }
-  if ((errorCode & Error::OneFilterMaskRequiresOneOrTwoAcceptanceFilters) != 0) {
-    str += "OneFilterMaskRequiresOneOrTwoAcceptanceFilters" + strJoin;
-  }
-  if ((errorCode & Error::TwoFilterMasksRequireThreeToSixAcceptanceFilters) != 0) {
-    str += "TwoFilterMasksRequireThreeToSixAcceptanceFilters" + strJoin;
-  }
-  if ((errorCode & Error::CannotAllocateReceiveBuffer) != 0) {
-    str += "CannotAllocateReceiveBuffer" + strJoin;
-  }
-  if ((errorCode & Error::CannotAllocateTransmitBuffer0) != 0) {
-    str += "CannotAllocateTransmitBuffer0" + strJoin;
-  }
-  if ((errorCode & Error::CannotAllocateTransmitBuffer1) != 0) {
-    str += "CannotAllocateTransmitBuffer1" + strJoin;
-  }
-  if ((errorCode & Error::CannotAllocateTransmitBuffer2) != 0) {
-    str += "CannotAllocateTransmitBuffer2" + strJoin;
-  }
-  int lastJoinIndex = str.lastIndexOf(strJoin);
-  if (lastJoinIndex > 0) {
-    str = str.substring(0, lastJoinIndex);
-  }
-  return str;
+  return "0x" + String(errorCode, HEX);
+  // String str = "";
+  // String strJoin = ", ";
+  // if ((errorCode & Error::NoMCP2515) != 0) {
+  //   str += "NoMCP2515" + strJoin;
+  // }
+  // if ((errorCode & Error::TooFarFromDesiredBitRate) != 0) {
+  //   str += "TooFarFromDesiredBitRate" + strJoin;
+  // }
+  // if ((errorCode & Error::InconsistentBitRateSettings) != 0) {
+  //   str += "InconsistentBitRateSettings" + strJoin;
+  // }
+  // if ((errorCode & Error::INTPinIsNotAnInterrupt) != 0) {
+  //   str += "INTPinIsNotAnInterrupt" + strJoin;
+  // }
+  // if ((errorCode & Error::ISRIsNull) != 0) {
+  //   str += "ISRIsNull" + strJoin;
+  // }
+  // if ((errorCode & Error::RequestedModeTimeOut) != 0) {
+  //   str += "RequestedModeTimeOut" + strJoin;
+  // }
+  // if ((errorCode & Error::AcceptanceFilterArrayIsNULL) != 0) {
+  //   str += "AcceptanceFilterArrayIsNULL" + strJoin;
+  // }
+  // if ((errorCode & Error::OneFilterMaskRequiresOneOrTwoAcceptanceFilters) != 0) {
+  //   str += "OneFilterMaskRequiresOneOrTwoAcceptanceFilters" + strJoin;
+  // }
+  // if ((errorCode & Error::TwoFilterMasksRequireThreeToSixAcceptanceFilters) != 0) {
+  //   str += "TwoFilterMasksRequireThreeToSixAcceptanceFilters" + strJoin;
+  // }
+  // if ((errorCode & Error::CannotAllocateReceiveBuffer) != 0) {
+  //   str += "CannotAllocateReceiveBuffer" + strJoin;
+  // }
+  // if ((errorCode & Error::CannotAllocateTransmitBuffer0) != 0) {
+  //   str += "CannotAllocateTransmitBuffer0" + strJoin;
+  // }
+  // if ((errorCode & Error::CannotAllocateTransmitBuffer1) != 0) {
+  //   str += "CannotAllocateTransmitBuffer1" + strJoin;
+  // }
+  // if ((errorCode & Error::CannotAllocateTransmitBuffer2) != 0) {
+  //   str += "CannotAllocateTransmitBuffer2" + strJoin;
+  // }
+  // int lastJoinIndex = str.lastIndexOf(strJoin);
+  // if (lastJoinIndex > 0) {
+  //   str = str.substring(0, lastJoinIndex);
+  // }
+  // return str;
 }
 
 Driver::Driver(const uint8_t inCS)

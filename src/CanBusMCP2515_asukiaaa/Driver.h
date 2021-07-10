@@ -36,6 +36,26 @@ class BitRate {
   static const uint32_t Kbps5 = 5UL * 1000UL;
 };
 
+class Error {
+ public:
+  static const uint16_t NoMCP2515 = 1 << 0;
+  static const uint16_t TooFarFromDesiredBitRate = 1 << 1;
+  static const uint16_t InconsistentBitRateSettings = 1 << 2;
+  static const uint16_t INTPinIsNotAnInterrupt = 1 << 3;
+  static const uint16_t ISRIsNull = 1 << 4;
+  static const uint16_t RequestedModeTimeOut = 1 << 5;
+  static const uint16_t AcceptanceFilterArrayIsNULL = 1 << 6;
+  static const uint16_t OneFilterMaskRequiresOneOrTwoAcceptanceFilters = 1 << 7;
+  static const uint16_t TwoFilterMasksRequireThreeToSixAcceptanceFilters = 1
+                                                                           << 8;
+  static const uint16_t CannotAllocateReceiveBuffer = 1 << 9;
+  static const uint16_t CannotAllocateTransmitBuffer0 = 1 << 10;
+  static const uint16_t CannotAllocateTransmitBuffer1 = 1 << 11;
+  static const uint16_t CannotAllocateTransmitBuffer2 = 1 << 12;
+
+  static String toString(uint16_t errorCode);
+};
+
 class Driver {
  public:
   Driver(const uint8_t inCS);
@@ -51,22 +71,6 @@ class Driver {
                  const ACAN2515Mask inRXM0, const ACAN2515Mask inRXM1,
                  const ACAN2515AcceptanceFilter inAcceptanceFilters[],
                  const uint8_t inAcceptanceFilterCount);
-  static const uint16_t kNoMCP2515 = 1 << 0;
-  static const uint16_t kTooFarFromDesiredBitRate = 1 << 1;
-  static const uint16_t kInconsistentBitRateSettings = 1 << 2;
-  static const uint16_t kINTPinIsNotAnInterrupt = 1 << 3;
-  static const uint16_t kISRIsNull = 1 << 4;
-  static const uint16_t kRequestedModeTimeOut = 1 << 5;
-  static const uint16_t kAcceptanceFilterArrayIsNULL = 1 << 6;
-  static const uint16_t kOneFilterMaskRequiresOneOrTwoAcceptanceFilters = 1
-                                                                          << 7;
-  static const uint16_t kTwoFilterMasksRequireThreeToSixAcceptanceFilters =
-      1 << 8;
-  static const uint16_t kCannotAllocateReceiveBuffer = 1 << 9;
-  static const uint16_t kCannotAllocateTransmitBuffer0 = 1 << 10;
-  static const uint16_t kCannotAllocateTransmitBuffer1 = 1 << 11;
-  static const uint16_t kCannotAllocateTransmitBuffer2 = 1 << 12;
-  static const uint32_t kISRNotNullAndNoIntPin = 1 << 13;
   uint16_t changeModeOnTheFly(const OperationMode operationMode);
   uint16_t setFiltersOnTheFly(void);
   uint16_t setFiltersOnTheFly(

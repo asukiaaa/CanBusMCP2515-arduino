@@ -81,6 +81,55 @@ static void myESP32Task(void* pData) {
 }
 #endif
 
+String Error::toString(uint16_t errorCode) {
+  String str = "";
+  String strJoin = ", ";
+  if ((errorCode & Error::NoMCP2515) != 0) {
+    str += "NoMCP2515" + strJoin;
+  }
+  if ((errorCode & Error::TooFarFromDesiredBitRate) != 0) {
+    str += "TooFarFromDesiredBitRate" + strJoin;
+  }
+  if ((errorCode & Error::InconsistentBitRateSettings) != 0) {
+    str += "InconsistentBitRateSettings" + strJoin;
+  }
+  if ((errorCode & Error::INTPinIsNotAnInterrupt) != 0) {
+    str += "INTPinIsNotAnInterrupt" + strJoin;
+  }
+  if ((errorCode & Error::ISRIsNull) != 0) {
+    str += "ISRIsNull" + strJoin;
+  }
+  if ((errorCode & Error::RequestedModeTimeOut) != 0) {
+    str += "RequestedModeTimeOut" + strJoin;
+  }
+  if ((errorCode & Error::AcceptanceFilterArrayIsNULL) != 0) {
+    str += "AcceptanceFilterArrayIsNULL" + strJoin;
+  }
+  if ((errorCode & Error::OneFilterMaskRequiresOneOrTwoAcceptanceFilters) != 0) {
+    str += "OneFilterMaskRequiresOneOrTwoAcceptanceFilters" + strJoin;
+  }
+  if ((errorCode & Error::TwoFilterMasksRequireThreeToSixAcceptanceFilters) != 0) {
+    str += "TwoFilterMasksRequireThreeToSixAcceptanceFilters" + strJoin;
+  }
+  if ((errorCode & Error::CannotAllocateReceiveBuffer) != 0) {
+    str += "CannotAllocateReceiveBuffer" + strJoin;
+  }
+  if ((errorCode & Error::CannotAllocateTransmitBuffer0) != 0) {
+    str += "CannotAllocateTransmitBuffer0" + strJoin;
+  }
+  if ((errorCode & Error::CannotAllocateTransmitBuffer1) != 0) {
+    str += "CannotAllocateTransmitBuffer1" + strJoin;
+  }
+  if ((errorCode & Error::CannotAllocateTransmitBuffer2) != 0) {
+    str += "CannotAllocateTransmitBuffer2" + strJoin;
+  }
+  int lastJoinIndex = str.lastIndexOf(strJoin);
+  if (lastJoinIndex > 0) {
+    str = str.substring(0, lastJoinIndex);
+  }
+  return str;
+}
+
 Driver::Driver(const uint8_t inCS)
     :  // INT output of MCP2515
       mSPISettings(10UL * 1000UL * 1000UL, MSBFIRST,
@@ -110,11 +159,11 @@ uint16_t Driver::begin(const Settings& inSettings, const int inINT,
                        const uint8_t inAcceptanceFilterCount) {
   uint16_t errorCode = 0;
   if (inAcceptanceFilterCount == 0) {
-    errorCode = kOneFilterMaskRequiresOneOrTwoAcceptanceFilters;
+    errorCode = Error::OneFilterMaskRequiresOneOrTwoAcceptanceFilters;
   } else if (inAcceptanceFilterCount > 2) {
-    errorCode = kOneFilterMaskRequiresOneOrTwoAcceptanceFilters;
+    errorCode = Error::OneFilterMaskRequiresOneOrTwoAcceptanceFilters;
   } else if (inAcceptanceFilters == NULL) {
-    errorCode = kAcceptanceFilterArrayIsNULL;
+    errorCode = Error::AcceptanceFilterArrayIsNULL;
   } else {
     errorCode = beginWithoutFilterCheck(
         inSettings, inINT, inInterruptServiceRoutine, inRXM0, inRXM0,
@@ -130,11 +179,11 @@ uint16_t Driver::begin(const Settings& inSettings, const int inINT,
                        const uint8_t inAcceptanceFilterCount) {
   uint16_t errorCode = 0;
   if (inAcceptanceFilterCount < 3) {
-    errorCode = kTwoFilterMasksRequireThreeToSixAcceptanceFilters;
+    errorCode = Error::TwoFilterMasksRequireThreeToSixAcceptanceFilters;
   } else if (inAcceptanceFilterCount > 6) {
-    errorCode = kTwoFilterMasksRequireThreeToSixAcceptanceFilters;
+    errorCode = Error::TwoFilterMasksRequireThreeToSixAcceptanceFilters;
   } else if (inAcceptanceFilters == NULL) {
-    errorCode = kAcceptanceFilterArrayIsNULL;
+    errorCode = Error::AcceptanceFilterArrayIsNULL;
   } else {
     errorCode = beginWithoutFilterCheck(
         inSettings, inINT, inInterruptServiceRoutine, inRXM0, inRXM1,
@@ -157,8 +206,8 @@ uint16_t Driver::beginWithoutFilterCheck(
   uint16_t errorCode = 0;  // Means no error
   // Check mINT has interrupt capability
   const int itPin = digitalPinToInterrupt(mINT);
-  if (inInterruptServiceRoutine != NULL && (itPin == NOT_AN_INTERRUPT)) {
-    errorCode = kINTPinIsNotAnInterrupt;
+  if (inInterruptServiceRoutine != NULL && itPin == NOT_AN_INTERRUPT) {
+    errorCode = Error::INTPinIsNotAnInterrupt;
   }
   // if no error, configure port and MCP2515
   if (errorCode == 0) {
@@ -178,16 +227,14 @@ uint16_t Driver::beginWithoutFilterCheck(
 #ifdef ARDUINO_ARCH_ESP32
     xTaskCreate(myESP32Task, "ACAN2515Handler", 1024, this, 256, NULL);
 #endif
-    if (mINT != 255) {  // 255 means interrupt is not used
 #ifdef ARDUINO_ARCH_ESP32
-      attachInterrupt(itPin, inInterruptServiceRoutine, FALLING);
+    attachInterrupt(itPin, inInterruptServiceRoutine, FALLING);
 #else
-      mSpi->usingInterrupt(
-          itPin);  // usingInterrupt is not implemented in Arduino ESP32
-      attachInterrupt(itPin, inInterruptServiceRoutine, LOW);
-      isAttachedInterrupt = true;
+    mSpi->usingInterrupt(
+        itPin);  // usingInterrupt is not implemented in Arduino ESP32
+    attachInterrupt(itPin, inInterruptServiceRoutine, LOW);
+    isAttachedInterrupt = true;
 #endif
-    }
   }
   return errorCode;
 }
@@ -249,28 +296,28 @@ uint16_t Driver::internalBeginOperation(
     ok = read2515Register(CNF1_REGISTER) == 0xAA;
   }
   if (!ok) {
-    errorCode = kNoMCP2515;
+    errorCode = Error::NoMCP2515;
   }
   mSpi->endTransaction();
   //----------------------------------- Check if settings are correct
   if (!inSettings.mBitRateClosedToDesiredRate) {
-    errorCode |= kTooFarFromDesiredBitRate;
+    errorCode |= Error::TooFarFromDesiredBitRate;
   }
   if (inSettings.CANBitSettingConsistency() != 0) {
-    errorCode |= kInconsistentBitRateSettings;
+    errorCode |= Error::InconsistentBitRateSettings;
   }
   //----------------------------------- Allocate buffer
   if (!mReceiveBuffer.initWithSize(inSettings.mReceiveBufferSize)) {
-    errorCode |= kCannotAllocateReceiveBuffer;
+    errorCode |= Error::CannotAllocateReceiveBuffer;
   }
   if (!mTransmitBuffer[0].initWithSize(inSettings.mTransmitBuffer0Size)) {
-    errorCode |= kCannotAllocateTransmitBuffer0;
+    errorCode |= Error::CannotAllocateTransmitBuffer0;
   }
   if (!mTransmitBuffer[1].initWithSize(inSettings.mTransmitBuffer1Size)) {
-    errorCode |= kCannotAllocateTransmitBuffer1;
+    errorCode |= Error::CannotAllocateTransmitBuffer1;
   }
   if (!mTransmitBuffer[2].initWithSize(inSettings.mTransmitBuffer2Size)) {
-    errorCode |= kCannotAllocateTransmitBuffer2;
+    errorCode |= Error::CannotAllocateTransmitBuffer2;
   }
   mTXBIsFree[0] = true;
   mTXBIsFree[1] = true;
@@ -393,7 +440,7 @@ uint16_t Driver::setRequestedMode(const uint8_t inCANControlRegister) {
     mSpi->endTransaction();
     wait = actualMode != (inCANControlRegister & 0xE0);
     if (wait && (millis() >= deadline)) {
-      errorCode |= kRequestedModeTimeOut;
+      errorCode |= Error::RequestedModeTimeOut;
       wait = false;
     }
   }
@@ -424,11 +471,11 @@ uint16_t Driver::setFiltersOnTheFly(
     const uint8_t inAcceptanceFilterCount) {
   uint16_t errorCode = 0;
   if (inAcceptanceFilterCount == 0) {
-    errorCode = kOneFilterMaskRequiresOneOrTwoAcceptanceFilters;
+    errorCode = Error::OneFilterMaskRequiresOneOrTwoAcceptanceFilters;
   } else if (inAcceptanceFilterCount > 2) {
-    errorCode = kOneFilterMaskRequiresOneOrTwoAcceptanceFilters;
+    errorCode = Error::OneFilterMaskRequiresOneOrTwoAcceptanceFilters;
   } else if (inAcceptanceFilters == NULL) {
-    errorCode = kAcceptanceFilterArrayIsNULL;
+    errorCode = Error::AcceptanceFilterArrayIsNULL;
   } else {
     errorCode = internalSetFiltersOnTheFly(
         inRXM0, ACAN2515Mask(), inAcceptanceFilters, inAcceptanceFilterCount);
@@ -442,11 +489,11 @@ uint16_t Driver::setFiltersOnTheFly(
     const uint8_t inAcceptanceFilterCount) {
   uint16_t errorCode = 0;
   if (inAcceptanceFilterCount < 3) {
-    errorCode = kTwoFilterMasksRequireThreeToSixAcceptanceFilters;
+    errorCode = Error::TwoFilterMasksRequireThreeToSixAcceptanceFilters;
   } else if (inAcceptanceFilterCount > 6) {
-    errorCode = kTwoFilterMasksRequireThreeToSixAcceptanceFilters;
+    errorCode = Error::TwoFilterMasksRequireThreeToSixAcceptanceFilters;
   } else if (inAcceptanceFilters == NULL) {
-    errorCode = kAcceptanceFilterArrayIsNULL;
+    errorCode = Error::AcceptanceFilterArrayIsNULL;
   } else {
     errorCode = internalSetFiltersOnTheFly(inRXM0, inRXM1, inAcceptanceFilters,
                                            inAcceptanceFilterCount);

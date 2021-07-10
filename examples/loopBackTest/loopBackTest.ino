@@ -21,7 +21,9 @@ void setup() {
   Serial.println(settings.toString());
   // while(!Serial) { delay(10); }
   while (true) {
-    uint16_t errorCode = can.begin(settings, PIN_INT, [] { can.isr(); });
+    // uint16_t errorCode = can.begin(settings);
+    uint16_t errorCode = can.begin(settings, PIN_INT);
+    // uint16_t errorCode = can.begin(settings, PIN_INT, [] { can.isr(); });
     if (errorCode == 0) break;
     // Serial.println(String(PIN_INT) + " " + String(digitalPinToInterrupt(PIN_INT)));
     Serial.print("Configuration error 0x");

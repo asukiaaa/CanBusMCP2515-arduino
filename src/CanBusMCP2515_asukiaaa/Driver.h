@@ -39,8 +39,8 @@ class BitRate {
 class Driver {
  public:
   Driver(const uint8_t inCS);
-  uint16_t begin(const Settings &inSettings, const int inINT,
-                 void (*inInterruptServiceRoutine)(void));
+  uint16_t begin(const Settings &inSettings, const int inINT = -1,
+                 void (*inInterruptServiceRoutine)(void) = NULL);
   uint16_t begin(const Settings &inSettings, const int inINT,
                  void (*inInterruptServiceRoutine)(void),
                  const ACAN2515Mask inRXM0,
@@ -133,6 +133,7 @@ class Driver {
   const SPISettings mSPISettings;
   const uint8_t mCS;
   int mINT;
+  bool isAttachedInterrupt = false;
 
   void internalSendMessage(const CanBusData_asukiaaa::Frame &inFrame,
                            const uint8_t inTXB);
@@ -163,6 +164,8 @@ class Driver {
       const uint8_t inAcceptanceFilterCount);
   Driver(const Driver &) = delete;
   Driver &operator=(const Driver &) = delete;
+  void sendReset();
+  bool neededToHandleInterruptTask();
 };
 
 };  // namespace CanBusMCP2515_asukiaaa

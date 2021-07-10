@@ -155,44 +155,26 @@ uint16_t Driver::beginWithoutFilterCheck(
     mSpi->begin();
   }
   uint16_t errorCode = 0;  // Means no error
-  //----------------------------------- Check mINT has interrupt capability
-  const int8_t itPin = digitalPinToInterrupt(mINT);
-  if ((mINT != 255) && (itPin == NOT_AN_INTERRUPT)) {
+  // Check mINT has interrupt capability
+  const int itPin = digitalPinToInterrupt(mINT);
+  if (inInterruptServiceRoutine != NULL && (itPin == NOT_AN_INTERRUPT)) {
     errorCode = kINTPinIsNotAnInterrupt;
   }
-  //----------------------------------- Check interrupt service routine is not
-  // null
-  if ((mINT != 255) && (inInterruptServiceRoutine == NULL)) {
-    errorCode |= kISRIsNull;
-  }
-  //----------------------------------- Check consistency between ISR and INT
-  // pin
-  if ((mINT == 255) && (inInterruptServiceRoutine != NULL)) {
-    errorCode |= kISRNotNullAndNoIntPin;
-  }
-  //----------------------------------- if no error, configure port and MCP2515
+  // if no error, configure port and MCP2515
   if (errorCode == 0) {
     //--- Configure ports
-    if (mINT != 255) {  // 255 means interrupt is not used
+    if (mINT >= 0) {
       pinMode(mINT, INPUT_PULLUP);
     }
     pinMode(mCS, OUTPUT);
-    digitalWrite(mCS, HIGH);  // CS is high outside a command
-                              //--- Send software reset to MCP2515
-    mSpi->beginTransaction(mSPISettings);
-    select();
-    mSpi->transfer(RESET_COMMAND);
-    unselect();
-    mSpi->endTransaction();
-    //---
-    delayMicroseconds(10);
-    //--- Internal begin
+    digitalWrite(mCS, HIGH);
+    sendReset();
     errorCode =
         internalBeginOperation(inSettings, inRXM0, inRXM1, inAcceptanceFilters,
                                inAcceptanceFilterCount);
   }
-  //--- Configure interrupt only if no error (thanks to mvSarma)
-  if (errorCode == 0) {
+
+  if (errorCode == 0 && itPin >= 0 && inInterruptServiceRoutine != NULL) {
 #ifdef ARDUINO_ARCH_ESP32
     xTaskCreate(myESP32Task, "ACAN2515Handler", 1024, this, 256, NULL);
 #endif
@@ -203,6 +185,7 @@ uint16_t Driver::beginWithoutFilterCheck(
       mSpi->usingInterrupt(
           itPin);  // usingInterrupt is not implemented in Arduino ESP32
       attachInterrupt(itPin, inInterruptServiceRoutine, LOW);
+      isAttachedInterrupt = true;
 #endif
     }
   }
@@ -210,33 +193,20 @@ uint16_t Driver::beginWithoutFilterCheck(
 }
 
 bool Driver::available(void) {
-#ifdef ARDUINO_ARCH_ESP32
-  mSpi->beginTransaction(mSPISettings);  // For ensuring mutual exclusion access
-#else
-  noInterrupts();
-#endif
+  if (neededToHandleInterruptTask()) {
+    isr_core();
+  }
   const bool hasReceivedMessage = mReceiveBuffer.count() > 0;
-#ifdef ARDUINO_ARCH_ESP32
-  mSpi->endTransaction();
-#else
-  interrupts();
-#endif
   return hasReceivedMessage;
 }
 
 bool Driver::receive(Frame* outMessage) {
-#ifdef ARDUINO_ARCH_ESP32
-  mSpi->beginTransaction(mSPISettings);  // For ensuring mutual exclusion access
-#else
-  noInterrupts();
-#endif
+  if (neededToHandleInterruptTask()) {
+    isr_core();
+  }
+  if (isAttachedInterrupt) noInterrupts();
   const bool hasReceivedMessage = mReceiveBuffer.remove(*outMessage);
-#ifdef ARDUINO_ARCH_ESP32
-  mSpi->endTransaction();
-#else
-  interrupts();
-#endif
-  //---
+  if (isAttachedInterrupt) interrupts();
   return hasReceivedMessage;
 }
 
@@ -248,7 +218,7 @@ bool Driver::receive(CanBusData_asukiaaa::Frame* outMessage) {
 }
 
 bool Driver::dispatchReceivedMessage(
-    const tFilterMatchCallBack inFilterMatchCallBack) {
+  const tFilterMatchCallBack inFilterMatchCallBack) {
   Frame receivedMessage;
   const bool hasReceived = receive(&receivedMessage);
   if (hasReceived) {
@@ -269,7 +239,7 @@ uint16_t Driver::internalBeginOperation(
     const ACAN2515Mask inRXM1,
     const ACAN2515AcceptanceFilter inAcceptanceFilters[],
     const uint8_t inAcceptanceFilterCount) {
-  uint16_t errorCode = 0;  // Ok be default
+  uint16_t errorCode = 0;
   //----------------------------------- Check if MCP2515 is accessible
   mSpi->beginTransaction(mSPISettings);
   write2515Register(CNF1_REGISTER, 0x55);
@@ -354,16 +324,11 @@ uint16_t Driver::internalBeginOperation(
     //  Bit 0 --> 1: RX0IE
     mSpi->transfer(0x1F);
     unselect();
-    //----------------------------------- Deactivate the RXnBF Pins (High
-    // Impedance State)
     write2515Register(BFPCTRL_REGISTER, 0);
-    //----------------------------------- Set TXnRTS as inputs
     write2515Register(TXRTSCTRL_REGISTER, 0);
-    //----------------------------------- RXBnCTRL
     write2515Register(RXB0CTRL_REGISTER, ((uint8_t)inSettings.mRolloverEnable)
                                              << 2);
     write2515Register(RXB1CTRL_REGISTER, 0x00);
-    //----------------------------------- Setup mask registers
     setupMaskRegister(inRXM0, RXM0SIDH_REGISTER);
     setupMaskRegister(inRXM1, RXM1SIDH_REGISTER);
     if (inAcceptanceFilterCount > 0) {
@@ -383,12 +348,10 @@ uint16_t Driver::internalBeginOperation(
         idx += 1;
       }
     }
-    //----------------------------------- Set TXBi priorities
     write2515Register(TXB0CTRL_REGISTER, inSettings.mTXBPriority & 3);
     write2515Register(TXB1CTRL_REGISTER, (inSettings.mTXBPriority >> 2) & 3);
     write2515Register(TXB2CTRL_REGISTER, (inSettings.mTXBPriority >> 4) & 3);
     mSpi->endTransaction();
-    //----------------------------------- Reset device to requested mode
     uint8_t canctrl = inSettings.mOneShotModeEnabled ? (1 << 3) : 0;
     switch (inSettings.mCLKOUT_SOF_pin) {
       case Settings::CLOCK:
@@ -409,11 +372,9 @@ uint16_t Driver::internalBeginOperation(
       case Settings::HiZ:
         break;
     }
-    //--- Request mode
     const uint8_t requestedMode = (uint8_t)inSettings.mOperationMode;
     errorCode |= setRequestedMode(canctrl | requestedMode);
   }
-  //-----------------------------------
   return errorCode;
 }
 
@@ -536,9 +497,9 @@ uint16_t Driver::internalSetFiltersOnTheFly(
 }
 
 void Driver::end(void) {
-  //--- Remove interrupt capability of mINT pin
-  if (mINT != 255) {
+  if (isAttachedInterrupt) {
     detachInterrupt(digitalPinToInterrupt(mINT));
+    isAttachedInterrupt = false;
   }
   //--- Request configuration mode
   const uint8_t configurationMode = (0b100 << 5);
@@ -844,6 +805,19 @@ bool Driver::tryToSend(const Frame& inMessage) {
 
 bool Driver::tryToSend(const CanBusData_asukiaaa::Frame& inMessage) {
   return tryToSend(Frame(inMessage));
+}
+
+void Driver::sendReset() {
+  mSpi->beginTransaction(mSPISettings);
+  select();
+  mSpi->transfer(RESET_COMMAND);
+  unselect();
+  mSpi->endTransaction();
+  delay(5);
+}
+
+bool Driver::neededToHandleInterruptTask() {
+  return !isAttachedInterrupt || mINT < 0 || digitalRead(mINT);
 }
 
 };  // namespace CanBusMCP2515_asukiaaa

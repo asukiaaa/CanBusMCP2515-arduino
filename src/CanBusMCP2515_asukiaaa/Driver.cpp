@@ -227,14 +227,12 @@ uint16_t Driver::beginWithoutFilterCheck(
 #ifdef ARDUINO_ARCH_ESP32
     xTaskCreate(myESP32Task, "ACAN2515Handler", 1024, this, 256, NULL);
 #endif
-#ifdef ARDUINO_ARCH_ESP32
-    attachInterrupt(itPin, inInterruptServiceRoutine, FALLING);
-#else
-    mSpi->usingInterrupt(
-        itPin);  // usingInterrupt is not implemented in Arduino ESP32
-    attachInterrupt(itPin, inInterruptServiceRoutine, LOW);
-    isAttachedInterrupt = true;
+#ifndef ARDUINO_ARCH_ESP32
+    // usingInterrupt is not implemented in Arduino ESP32
+    mSpi->usingInterrupt(itPin);
 #endif
+    attachInterrupt(itPin, inInterruptServiceRoutine, FALLING);
+    isAttachedInterrupt = true;
   }
   return errorCode;
 }

@@ -68,19 +68,6 @@ static const uint8_t RXFSIDH_REGISTER[6] = {0x00, 0x04, 0x08, 0x10, 0x14, 0x18};
 
 //··································································································
 
-#ifdef ARDUINO_ARCH_ESP32
-static void myESP32Task(void* pData) {
-  ACAN2515* canDriver = (ACAN2515*)pData;
-  while (1) {
-    xSemaphoreTake(canDriver->mISRSemaphore, portMAX_DELAY);
-    bool loop = true;
-    while (loop) {
-      loop = canDriver->isr_core();
-    }
-  }
-}
-#endif
-
 String Error::toString(uint16_t errorCode) {
   return "0x" + String(errorCode, HEX);
   // String str = "";
@@ -136,9 +123,6 @@ Driver::Driver(const uint8_t inCS)
       mSPISettings(10UL * 1000UL * 1000UL, MSBFIRST,
                    SPI_MODE0),  // 10 MHz, UL suffix is required for Arduino Uno
       mCS(inCS),
-#ifdef ARDUINO_ARCH_ESP32
-      mISRSemaphore(xSemaphoreCreateCounting(10, 0)),
-#endif
       mReceiveBuffer(),
       mCallBackFunctionArray(),
       mTXBIsFree() {
@@ -225,9 +209,6 @@ uint16_t Driver::beginWithoutFilterCheck(
   }
 
   if (errorCode == 0 && itPin >= 0 && inInterruptServiceRoutine != NULL) {
-#ifdef ARDUINO_ARCH_ESP32
-    xTaskCreate(myESP32Task, "ACAN2515Handler", 1024, this, 256, NULL);
-#endif
 #ifndef ARDUINO_ARCH_ESP32
     // usingInterrupt is not implemented in Arduino ESP32
     mSpi->usingInterrupt(itPin);
@@ -558,28 +539,14 @@ void Driver::end(void) {
   mReceiveBuffer.free();
 }
 
-#ifdef ARDUINO_ARCH_ESP32
-void ACAN2515::poll(void) { xSemaphoreGive(mISRSemaphore); }
-#endif
-
-#ifndef ARDUINO_ARCH_ESP32
 void Driver::poll(void) {
   noInterrupts();
   while (isr_core()) {
   }
   interrupts();
 }
-#endif
 
-#ifdef ARDUINO_ARCH_ESP32
-void ACAN2515::isr(void) {
-  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-  xSemaphoreGiveFromISR(mISRSemaphore, &xHigherPriorityTaskWoken);
-  portYIELD_FROM_ISR();
-}
-#else
 void Driver::isr(void) { isr_core(); }
-#endif
 
 bool Driver::isr_core(void) {
   bool handled = false;

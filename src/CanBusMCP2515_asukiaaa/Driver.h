@@ -91,10 +91,6 @@ class Driver {
   void isr(void);
   bool isr_core(void);
 
-#ifdef ARDUINO_ARCH_ESP32
-  SemaphoreHandle_t mISRSemaphore;
-#endif
-
   inline uint16_t receiveBufferSize(void) const {
     return mReceiveBuffer.size();
   }
@@ -127,15 +123,15 @@ class Driver {
   uint8_t errorFlagRegister(void);
 
  private:
+  const SPISettings mSPISettings;
+  const uint8_t mCS;
+  ACANBuffer16 mReceiveBuffer;
+  ACANCallBackRoutine mCallBackFunctionArray[6];
   ACANBuffer16 mTransmitBuffer[3];
   bool mTXBIsFree[3];
-  ACANCallBackRoutine mCallBackFunctionArray[6];
-  ACANBuffer16 mReceiveBuffer;
   void handleTXBInterrupt(const uint8_t inTXB);
   void handleRXBInterrupt(void);
   SPIClass *mSpi = NULL;
-  const SPISettings mSPISettings;
-  const uint8_t mCS;
   int mINT;
   bool isAttachedInterrupt = false;
 

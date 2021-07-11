@@ -22,6 +22,7 @@ MIT
 
 ## References
 
+- [CANをArduinoで使ってみた](https://asukiaaa.blogspot.com/2021/07/canarduino.html)
 - [MCP2515](https://ww1.microchip.com/downloads/en/DeviceDoc/MCP2515-Stand-Alone-CAN-Controller-with-SPI-20001801J.pdf)
 - [acan25125](https://github.com/pierremolinaro/acan2515)
 - [MCP_CAN_lib](https://github.com/coryjfowler/MCP_CAN_lib)

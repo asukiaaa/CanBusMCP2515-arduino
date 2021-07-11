@@ -2,6 +2,16 @@
 
 A library for arduino to communicate with MCP2515 or MCP25625 on SPI to use CAN Bus.
 
+## Setup
+
+### Arduino IDE
+
+Install `CanBusMCP2515_asukiaaa` via library manager.
+
+### Platform IO
+
+Add `CanBusMCP2515_asukiaaa` as `lib_deps` in `platformio.ini`.
+
 ## Usage
 
 See [examples](./examples).

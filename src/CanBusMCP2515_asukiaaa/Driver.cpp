@@ -93,10 +93,12 @@ String Error::toString(uint16_t errorCode) {
   // if ((errorCode & Error::AcceptanceFilterArrayIsNULL) != 0) {
   //   str += "AcceptanceFilterArrayIsNULL" + strJoin;
   // }
-  // if ((errorCode & Error::OneFilterMaskRequiresOneOrTwoAcceptanceFilters) != 0) {
+  // if ((errorCode & Error::OneFilterMaskRequiresOneOrTwoAcceptanceFilters) !=
+  // 0) {
   //   str += "OneFilterMaskRequiresOneOrTwoAcceptanceFilters" + strJoin;
   // }
-  // if ((errorCode & Error::TwoFilterMasksRequireThreeToSixAcceptanceFilters) != 0) {
+  // if ((errorCode & Error::TwoFilterMasksRequireThreeToSixAcceptanceFilters)
+  // != 0) {
   //   str += "TwoFilterMasksRequireThreeToSixAcceptanceFilters" + strJoin;
   // }
   // if ((errorCode & Error::CannotAllocateReceiveBuffer) != 0) {
@@ -118,11 +120,11 @@ String Error::toString(uint16_t errorCode) {
   // return str;
 }
 
-Driver::Driver(const uint8_t inCS)
-    :  // INT output of MCP2515
-      mSPISettings(10UL * 1000UL * 1000UL, MSBFIRST,
+Driver::Driver(const uint8_t inCS, const int inINT)
+    : mSPISettings(10UL * 1000UL * 1000UL, MSBFIRST,
                    SPI_MODE0),  // 10 MHz, UL suffix is required for Arduino Uno
       mCS(inCS),
+      mINT(inINT),
       mReceiveBuffer(),
       mCallBackFunctionArray(),
       mTXBIsFree() {
@@ -131,13 +133,13 @@ Driver::Driver(const uint8_t inCS)
   }
 }
 
-uint16_t Driver::begin(const Settings& inSettings, const int inINT,
+uint16_t Driver::begin(const Settings& inSettings,
                        void (*inInterruptServiceRoutine)(void)) {
-  return beginWithoutFilterCheck(inSettings, inINT, inInterruptServiceRoutine,
+  return beginWithoutFilterCheck(inSettings, inInterruptServiceRoutine,
                                  ACAN2515Mask(), ACAN2515Mask(), NULL, 0);
 }
 
-uint16_t Driver::begin(const Settings& inSettings, const int inINT,
+uint16_t Driver::begin(const Settings& inSettings,
                        void (*inInterruptServiceRoutine)(void),
                        const ACAN2515Mask inRXM0,
                        const ACAN2515AcceptanceFilter inAcceptanceFilters[],
@@ -150,14 +152,14 @@ uint16_t Driver::begin(const Settings& inSettings, const int inINT,
   } else if (inAcceptanceFilters == NULL) {
     errorCode = Error::AcceptanceFilterArrayIsNULL;
   } else {
-    errorCode = beginWithoutFilterCheck(
-        inSettings, inINT, inInterruptServiceRoutine, inRXM0, inRXM0,
-        inAcceptanceFilters, inAcceptanceFilterCount);
+    errorCode = beginWithoutFilterCheck(inSettings, inInterruptServiceRoutine,
+                                        inRXM0, inRXM0, inAcceptanceFilters,
+                                        inAcceptanceFilterCount);
   }
   return errorCode;
 }
 
-uint16_t Driver::begin(const Settings& inSettings, const int inINT,
+uint16_t Driver::begin(const Settings& inSettings,
                        void (*inInterruptServiceRoutine)(void),
                        const ACAN2515Mask inRXM0, const ACAN2515Mask inRXM1,
                        const ACAN2515AcceptanceFilter inAcceptanceFilters[],
@@ -170,20 +172,18 @@ uint16_t Driver::begin(const Settings& inSettings, const int inINT,
   } else if (inAcceptanceFilters == NULL) {
     errorCode = Error::AcceptanceFilterArrayIsNULL;
   } else {
-    errorCode = beginWithoutFilterCheck(
-        inSettings, inINT, inInterruptServiceRoutine, inRXM0, inRXM1,
-        inAcceptanceFilters, inAcceptanceFilterCount);
+    errorCode = beginWithoutFilterCheck(inSettings, inInterruptServiceRoutine,
+                                        inRXM0, inRXM1, inAcceptanceFilters,
+                                        inAcceptanceFilterCount);
   }
   return errorCode;
 }
 
 uint16_t Driver::beginWithoutFilterCheck(
-    const Settings& inSettings, const int inINT,
-    void (*inInterruptServiceRoutine)(void), const ACAN2515Mask inRXM0,
-    const ACAN2515Mask inRXM1,
+    const Settings& inSettings, void (*inInterruptServiceRoutine)(void),
+    const ACAN2515Mask inRXM0, const ACAN2515Mask inRXM1,
     const ACAN2515AcceptanceFilter inAcceptanceFilters[],
     const uint8_t inAcceptanceFilterCount) {
-  mINT = inINT;
   if (mSpi == NULL) {
     mSpi = &SPI;
     mSpi->begin();
@@ -245,7 +245,7 @@ bool Driver::receive(CanBusData_asukiaaa::Frame* outMessage) {
 }
 
 bool Driver::dispatchReceivedMessage(
-  const tFilterMatchCallBack inFilterMatchCallBack) {
+    const tFilterMatchCallBack inFilterMatchCallBack) {
   Frame receivedMessage;
   const bool hasReceived = receive(&receivedMessage);
   if (hasReceived) {

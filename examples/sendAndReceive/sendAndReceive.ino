@@ -13,7 +13,7 @@ static const auto BITRATE = CanBusMCP2515_asukiaaa::BitRate::Kbps125;
 #define CAN_ID 3000
 #endif
 
-CanBusMCP2515_asukiaaa::Driver can(PIN_CS);
+CanBusMCP2515_asukiaaa::Driver can(PIN_CS, PIN_INT);
 
 void setup() {
   CanBusMCP2515_asukiaaa::Settings settings(QUARTZ_FREQUENCY, BITRATE);
@@ -22,9 +22,8 @@ void setup() {
   Serial.println(settings.toString());
   // while(!Serial) { delay(10); }
   while (true) {
-    // uint16_t errorCode = can.begin(settings);
-    uint16_t errorCode = can.begin(settings, PIN_INT);
-    // uint16_t errorCode = can.begin(settings, PIN_INT, [] { can.isr(); });
+    uint16_t errorCode = can.begin(settings);
+    // uint16_t errorCode = can.begin(settings, [] { can.isr(); }); // attachInterrupt to INT pin
     if (errorCode == 0) break;
     Serial.print("Configuration error: ");
     Serial.println(CanBusMCP2515_asukiaaa::Error::toString(errorCode));

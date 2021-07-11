@@ -58,15 +58,15 @@ class Error {
 
 class Driver {
  public:
-  Driver(const uint8_t inCS);
-  uint16_t begin(const Settings &inSettings, const int inINT = -1,
+  Driver(const uint8_t inCS, const int inINT = -1);
+  uint16_t begin(const Settings &inSettings,
                  void (*inInterruptServiceRoutine)(void) = NULL);
-  uint16_t begin(const Settings &inSettings, const int inINT,
+  uint16_t begin(const Settings &inSettings,
                  void (*inInterruptServiceRoutine)(void),
                  const ACAN2515Mask inRXM0,
                  const ACAN2515AcceptanceFilter inAcceptanceFilters[],
                  const uint8_t inAcceptanceFilterCount);
-  uint16_t begin(const Settings &inSettings, const int inINT,
+  uint16_t begin(const Settings &inSettings,
                  void (*inInterruptServiceRoutine)(void),
                  const ACAN2515Mask inRXM0, const ACAN2515Mask inRXM1,
                  const ACAN2515AcceptanceFilter inAcceptanceFilters[],
@@ -125,6 +125,7 @@ class Driver {
  private:
   const SPISettings mSPISettings;
   const uint8_t mCS;
+  const int mINT;
   ACANBuffer16 mReceiveBuffer;
   ACANCallBackRoutine mCallBackFunctionArray[6];
   ACANBuffer16 mTransmitBuffer[3];
@@ -132,7 +133,6 @@ class Driver {
   void handleTXBInterrupt(const uint8_t inTXB);
   void handleRXBInterrupt(void);
   SPIClass *mSpi = NULL;
-  int mINT;
   bool isAttachedInterrupt = false;
 
   void internalSendMessage(const CanBusData_asukiaaa::Frame &inFrame,
@@ -140,9 +140,8 @@ class Driver {
   inline void select(void) { digitalWrite(mCS, LOW); }
   inline void unselect(void) { digitalWrite(mCS, HIGH); }
   uint16_t beginWithoutFilterCheck(
-      const Settings &inSettings, const int inINT,
-      void (*inInterruptServiceRoutine)(void), const ACAN2515Mask inRXM0,
-      const ACAN2515Mask inRXM1,
+      const Settings &inSettings, void (*inInterruptServiceRoutine)(void),
+      const ACAN2515Mask inRXM0, const ACAN2515Mask inRXM1,
       const ACAN2515AcceptanceFilter inAcceptanceFilters[],
       const uint8_t inAcceptanceFilterCount);
   uint16_t internalBeginOperation(

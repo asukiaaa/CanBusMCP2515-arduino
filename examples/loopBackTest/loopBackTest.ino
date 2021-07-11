@@ -9,7 +9,9 @@
 static const auto QUARTZ_FREQUENCY =
     CanBusMCP2515_asukiaaa::QuartzFrequency::MHz16;
 static const auto BITRATE = CanBusMCP2515_asukiaaa::BitRate::Kbps125;
-static const uint16_t SENDER_ID = 55;
+#ifndef CAN_ID
+#define CAN_ID 3000
+#endif
 
 CanBusMCP2515_asukiaaa::Driver can(PIN_CS);
 
@@ -38,7 +40,8 @@ void loop() {
   if (trySendAt == 0 || millis() - trySendAt > intervalMs) {
     trySendAt = millis();
     CanBusData_asukiaaa::Frame frame;
-    frame.id = SENDER_ID;
+    frame.id = CAN_ID;
+    frame.ext = frame.id > 2048;
     frame.data64 = millis();
     // frame.idx = frame.data64 % 3;
     const bool ok = can.tryToSend(frame);

@@ -17,7 +17,6 @@ CanBusMCP2515_asukiaaa::Driver can(PIN_CS);
 
 void setup() {
   CanBusMCP2515_asukiaaa::Settings settings(QUARTZ_FREQUENCY, BITRATE);
-  settings.mOperationMode = CanBusMCP2515_asukiaaa::OperationMode::LoopBack;
   Serial.begin(9600);
   Serial.println("settings:");
   Serial.println(settings.toString());

@@ -5,6 +5,9 @@
 #ifndef PIN_INT
 #define PIN_INT 7
 #endif
+#ifndef PIN_RST
+#define PIN_RST -1
+#endif
 
 static const auto QUARTZ_FREQUENCY =
     CanBusMCP2515_asukiaaa::QuartzFrequency::MHz16;
@@ -13,7 +16,7 @@ static const auto BITRATE = CanBusMCP2515_asukiaaa::BitRate::Kbps125;
 #define CAN_ID 3000
 #endif
 
-CanBusMCP2515_asukiaaa::Driver can(PIN_CS, PIN_INT);
+CanBusMCP2515_asukiaaa::Driver can(PIN_CS, PIN_INT, PIN_RST);
 
 void setup() {
   CanBusMCP2515_asukiaaa::Settings settings(QUARTZ_FREQUENCY, BITRATE);

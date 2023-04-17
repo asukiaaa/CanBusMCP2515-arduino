@@ -58,7 +58,7 @@ class Error {
 
 class Driver {
  public:
-  Driver(const uint8_t inCS, const int inINT = -1);
+  Driver(const uint8_t inCS, const int inINT = -1, const int pinRst = -1);
   uint16_t begin(const Settings &inSettings,
                  void (*inInterruptServiceRoutine)(void) = NULL);
   uint16_t begin(const Settings &inSettings,
@@ -126,6 +126,7 @@ class Driver {
   const SPISettings mSPISettings;
   const uint8_t mCS;
   const int mINT;
+  const int mRST;
   ACANBuffer16 mReceiveBuffer;
   ACANCallBackRoutine mCallBackFunctionArray[6];
   ACANBuffer16 mTransmitBuffer[3];
@@ -135,6 +136,7 @@ class Driver {
   SPIClass *mSpi = NULL;
   bool isAttachedInterrupt = false;
 
+  void resetByPin();
   void internalSendMessage(const CanBusData_asukiaaa::Frame &inFrame,
                            const uint8_t inTXB);
   inline void select(void) { digitalWrite(mCS, LOW); }

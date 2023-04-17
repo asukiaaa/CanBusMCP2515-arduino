@@ -1,8 +1,8 @@
-//··································································································
-// A CAN driver for MCP2515
-// Original is made by Pierre Molinaro
-// https://github.com/pierremolinaro/acan2515
-//··································································································
+// ··································································································
+//  A CAN driver for MCP2515
+//  Original is made by Pierre Molinaro
+//  https://github.com/pierremolinaro/acan2515
+// ··································································································
 
 #include "CanBusMCP2515_asukiaaa.h"
 
@@ -19,9 +19,9 @@ static const uint8_t READ_FROM_RXB1SIDH_COMMAND = 0x94;
 static const uint8_t READ_STATUS_COMMAND = 0xA0;
 static const uint8_t RX_STATUS_COMMAND = 0xB0;
 
-//··································································································
-//   MCP2515 REGISTERS
-//··································································································
+// ··································································································
+//    MCP2515 REGISTERS
+// ··································································································
 
 static const uint8_t BFPCTRL_REGISTER = 0x0C;
 static const uint8_t TXRTSCTRL_REGISTER = 0x0D;
@@ -44,17 +44,17 @@ static const uint8_t RXB1CTRL_REGISTER = 0x70;
 
 static const uint8_t RXFSIDH_REGISTER[6] = {0x00, 0x04, 0x08, 0x10, 0x14, 0x18};
 
-//··································································································
-// Note about ESP32
-//··································································································
+// ··································································································
+//  Note about ESP32
+// ··································································································
 //
-// It appears that Arduino ESP32 interrupts are managed in a completely
-// different way from "usual" Arduino:
-//   - SPI.usingInterrupt is not implemented;
-//   - noInterrupts() and interrupts() are NOPs;
-//   - interrupt service routines should be fast, otherwise you get an "Guru
-//   Meditation Error: Core 1 panic'ed
-//     (Interrupt wdt timeout on CPU1)".
+//  It appears that Arduino ESP32 interrupts are managed in a completely
+//  different way from "usual" Arduino:
+//    - SPI.usingInterrupt is not implemented;
+//    - noInterrupts() and interrupts() are NOPs;
+//    - interrupt service routines should be fast, otherwise you get an "Guru
+//    Meditation Error: Core 1 panic'ed
+//      (Interrupt wdt timeout on CPU1)".
 
 // So we handle the ESP32 interrupt in the following way:
 //   - interrupt service routine performs a xSemaphoreGive on mISRSemaphore of
@@ -66,7 +66,7 @@ static const uint8_t RXFSIDH_REGISTER[6] = {0x00, 0x04, 0x08, 0x10, 0x14, 0x18};
 //   natively protected by the
 //     beginTransaction / endTransaction pair, that manages a mutex.
 
-//··································································································
+// ··································································································
 
 String Error::toString(uint16_t errorCode) {
   return "0x" + String(errorCode, HEX);
@@ -120,11 +120,12 @@ String Error::toString(uint16_t errorCode) {
   // return str;
 }
 
-Driver::Driver(const uint8_t inCS, const int inINT)
+Driver::Driver(const uint8_t inCS, const int inINT, int pinRst)
     : mSPISettings(10UL * 1000UL * 1000UL, MSBFIRST,
                    SPI_MODE0),  // 10 MHz, UL suffix is required for Arduino Uno
       mCS(inCS),
       mINT(inINT),
+      mRST(pinRst),
       mReceiveBuffer(),
       mCallBackFunctionArray(),
       mTXBIsFree() {
@@ -200,9 +201,18 @@ uint16_t Driver::beginWithoutFilterCheck(
     if (mINT >= 0) {
       pinMode(mINT, INPUT_PULLUP);
     }
+    Serial.println("mRST: " + String(mRST));
+    if (mRST >= 0) {
+      pinMode(mRST, OUTPUT);
+      digitalWrite(mRST, HIGH);
+    }
     pinMode(mCS, OUTPUT);
     digitalWrite(mCS, HIGH);
-    sendReset();
+    if (mRST >= 0) {
+      resetByPin();
+    } else {
+      sendReset();
+    }
     errorCode =
         internalBeginOperation(inSettings, inRXM0, inRXM1, inAcceptanceFilters,
                                inAcceptanceFilterCount);
@@ -831,6 +841,15 @@ void Driver::sendReset() {
 
 bool Driver::neededToHandleInterruptTask() {
   return !isAttachedInterrupt || mINT < 0 || digitalRead(mINT);
+}
+
+void Driver::resetByPin() {
+  if (mRST >= 0) {
+    digitalWrite(mRST, LOW);
+    delay(2);
+    digitalWrite(mRST, HIGH);
+    delay(2);
+  }
 }
 
 };  // namespace CanBusMCP2515_asukiaaa

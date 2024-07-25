@@ -19,7 +19,9 @@ typedef void (*ACANCallBackRoutine)(
 class QuartzFrequency {
  public:
   static const uint32_t MHz8 = 8UL * 1000UL * 1000UL;
+  static const uint32_t MHz12 = 12UL * 1000UL * 1000UL;
   static const uint32_t MHz16 = 16UL * 1000UL * 1000UL;
+  static const uint32_t MHz20 = 20UL * 1000UL * 1000UL;
 };
 
 class BitRate {
